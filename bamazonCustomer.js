@@ -21,6 +21,13 @@ var customerViewQuestions =[
     message: "How many units would you like to buy?"}
 ];
 
+var anotherOrder = [
+    {type: "confirm",
+    name: "purchase_again",
+    message: "Would you like to make another purchase?",
+    default: true}
+];
+
 var connection = mysql.createConnection({
 
   host:"localhost",
@@ -31,14 +38,15 @@ var connection = mysql.createConnection({
 
 });
 
-makeSelection();
-
-
-function makeSelection(){
-
 connection.connect(function(err){
   if (err) throw err;
 
+  makeSelection();
+
+});
+
+
+function makeSelection(){
   //display all of the items for sale on Bamazon//
   connection.query("SELECT * FROM products3", function(err, results){
   if (err) throw err;
@@ -71,7 +79,6 @@ console.log("----------------------------");
        Stock: results[idSelectedArray].stock_quantity}];
 
     updatedStock = parseInt(results[idSelectedArray].stock_quantity - quantityPurchased);
-    console.log(updatedStock);
 
     price = parseFloat(results[idSelectedArray].price);
     product = results[idSelectedArray].product_name;
@@ -94,6 +101,7 @@ console.log("----------------------------");
 
           console.log("Your order has been placed!");
           console.log("Your total cost for your order of " + product + " is: $" + totalCost);
+          makeAnotherPurchase();
 
         }); //closing update to table
 
@@ -102,6 +110,8 @@ console.log("----------------------------");
 // If not, the app should log a phrase like Insufficient quantity!, and then prevent the order from going through.
       else{
         console.log("Insufficient quantity!");
+        makeAnotherPurchase();
+
       }
 // However, if your store does have enough of the product, you should fulfill the customer's order.
 
@@ -110,12 +120,22 @@ console.log("----------------------------");
 
 }); //closing connection query SELECT * FROM
 
-});
 
+}
 
-  // connection.end();
+function makeAnotherPurchase (){
 
+  inquirer.prompt(anotherOrder).then(function (answers) {
 
+    if(answers.purchase_again === true){
+      makeSelection();
+    }
+
+    else{
+      connection.end();
+    }
+
+  });//closing inquirer
 
 }
 
