@@ -2,10 +2,14 @@ var mysql = require("mysql");
 var inquirer = require("inquirer");
 require("console.table");
 
+var productArray = [];
 var quantityPurchased;
-var idSelected;
+var idSelectedArray;
+var idSelectedTable;
 var updatedStock;
-
+var totalCost;
+var price;
+var product;
 
 var customerViewQuestions =[
     {type: "input",
@@ -27,6 +31,11 @@ var connection = mysql.createConnection({
 
 });
 
+makeSelection();
+
+
+function makeSelection(){
+
 connection.connect(function(err){
   if (err) throw err;
 
@@ -34,8 +43,6 @@ connection.connect(function(err){
   connection.query("SELECT * FROM products3", function(err, results){
   if (err) throw err;
   console.log("Bamazon Top Items:");
-
-  var productArray = [];
 
   for(var i = 0; i < results.length; i++){
     productArray.push({
@@ -52,76 +59,66 @@ console.log("----------------------------");
 
   inquirer.prompt(customerViewQuestions).then(function (answers) {
 
-    idSelected = answers.id_to_buy - 1;
-    quantityPurchased = answers.units_to_buy;
+    idSelectedArray = parseInt(answers.id_to_buy - 1);
+    idSelectedTable = parseInt(answers.id_to_buy);
+    quantityPurchased = parseInt(answers.units_to_buy);
 
     var itemSelected =[
-       {ID: results[idSelected].id,
-       Product: results[idSelected].product_name,
-       Department: results[idSelected].department_name,
-       Price: results[idSelected].price,
-       Stock: results[idSelected].stock_quantity}];
+       {ID: results[idSelectedArray].id,
+       Product: results[idSelectedArray].product_name,
+       Department: results[idSelectedArray].department_name,
+       Price: results[idSelectedArray].price,
+       Stock: results[idSelectedArray].stock_quantity}];
 
-    updatedStock = results[idSelected].stock_quantity - quantityPurchased;
+    updatedStock = parseInt(results[idSelectedArray].stock_quantity - quantityPurchased);
+    console.log(updatedStock);
 
-    if(parseInt(results[idSelected].stock_quantity) >= parseInt(quantityPurchased)){
-    console.log("We have enough!")
+    price = parseFloat(results[idSelectedArray].price);
+    product = results[idSelectedArray].product_name;
 
-    connection.query("UPDATE products3 SET ? WHERE ?", [
-    {stock_quantity: updatedStock},
-    {id: idSelected}], function(err, results){
 
-      if (err) throw err;
+// Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
 
-    console.table(itemSelected);
+    if(parseInt(results[idSelectedArray].stock_quantity) >= parseInt(quantityPurchased)){
 
-}); //closing update to table
+          console.log("We have enough!")
 
-  }
+// This means updating the SQL database to reflect the remaining quantity.
+          connection.query("UPDATE products3 SET ? WHERE ?",
+          [{stock_quantity: updatedStock},{id: idSelectedTable}], function(err, results){
+
+          if (err) throw err;
+
+// Once the update goes through, show the customer the total cost of their purchase.
+          totalCost = parseFloat(price * parseInt(quantityPurchased));
+
+          console.log("Your order has been placed!");
+          console.log("Your total cost for your order of " + product + " is: $" + totalCost);
+
+        }); //closing update to table
+
+  }//closing if statement
 
 // If not, the app should log a phrase like Insufficient quantity!, and then prevent the order from going through.
-  else{
-    console.log("Insufficient quantity!");
-  }
+      else{
+        console.log("Insufficient quantity!");
+      }
+// However, if your store does have enough of the product, you should fulfill the customer's order.
 
-    // checkInventory();
 
 }); //closing inquirer prompt
 
 }); //closing connection query SELECT * FROM
 
-  connection.end();
-
 });
 
-// Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
-function checkInventory(){
 
-  if(results[idSelected].stock_quantity >= quantityPurchased){
-    console.log("We have enough!")
-  }
-
-// If not, the app should log a phrase like Insufficient quantity!, and then prevent the order from going through.
-  else{
-    console.log("Insufficient quantity!");
-  }
-//    connection.query("UPDATE products3 SET ? WHERE ?", [
-//     {stock_quantity: updatedStock},
-//     {id: idSelected}], function(err, results){
-
-//       if (err) throw err;
-
-//     console.table(itemSelected);
-
-// }); //closing update to table
-
-}//closing function
+  // connection.end();
 
 
 
+}
 
 
-// However, if your store does have enough of the product, you should fulfill the customer's order.
-// This means updating the SQL database to reflect the remaining quantity.
-// Once the update goes through, show the customer the total cost of their purchase.
+
 
