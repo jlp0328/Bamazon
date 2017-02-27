@@ -128,6 +128,7 @@ function makeAnotherPurchase (){
   inquirer.prompt(anotherOrder).then(function (answers) {
 
     if(answers.purchase_again === true){
+      productArray = [];
       makeSelection();
     }
 
