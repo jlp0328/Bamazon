@@ -120,7 +120,6 @@ console.log("----------------------------");
 
 }); //closing connection query SELECT * FROM
 
-
 }
 
 function makeAnotherPurchase (){
