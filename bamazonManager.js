@@ -131,33 +131,36 @@ function viewInventory(){
 //View low inventory, once selected list all items with an inventory count lower than 5
 function lowInventory(){
 
-  // connection.query("SELECT * FROM products3", function(err, results){
+  connection.query("SELECT * FROM products3", function(err, results){
+     if (err) throw err;
+
+     for(var i = 0; i < results.length; i++){
+
+        if (results[i].stock_quantity <= 5){
+
+                inventoryArray.push({
+               ID: results[i].id,
+               Product: results[i].product_name,
+               Department:results[i].department_name,
+               Price:results[i].price,
+               Stock:results[i].stock_quantity
+              });
 
 
 
-  //   if(results[i].stock_quantity < 5){
+      }//closing if statement
+      }//closing for loop
+        console.log("The following items have low inventory(less than 5 items in-stock): ");
 
-  //   for(var i = 0; i < results.length; i++){
-  //      inventoryArray.push({
-  //      ID: results[i].id,
-  //      Product: results[i].product_name,
-  //      Department:results[i].department_name,
-  //      Price:results[i].price,
-  //      Stock:results[i].stock_quantity
-  //     });
-
-    // } //closing for loop
-
-    // console.table(inventoryArray);
-
-
-    // }//closing if statement
+        console.table(inventoryArray);
+        managerOptions();
 
   // else{
   //   console.log("All inventory is above 5 units.")
+  //   managerOptions();
   // }//closing else statement
 
-// });//closing connection query
+});//closing connection query
 
 }
 
@@ -187,27 +190,17 @@ function addInventory(){
   inquirer.prompt(moreInventory).then(function (answers) {
 
     productToBeUpdated = parseInt(answers.product_to_update -1);
-    console.log(productToBeUpdated)
+    productToBeUpdated = results[productToBeUpdated].product_name;
+
     newQuantity = parseInt(answers.new_quantity);
-    console.log(newQuantity);
 
    connection.query("UPDATE products3 SET ? WHERE ?",
-   [{stock_quantity: newQuantity},{id: productToBeUpdated}], function(err, results){
+   [{stock_quantity: newQuantity},{product_name: productToBeUpdated}], function(err, results){
 
     if (err) throw err;
 
     console.log("The quantity of has been updated!");
-    managerOptions();
-
-   // var update = [{
-   //     ID: results[productToBeUpdated].id,
-   //     Product: results[productToBeUpdated].product_name,
-   //     Department: results[productToBeUpdated].department_name,
-   //     Price: results[productToBeUpdated].price,
-   //     Stock: results[productToBeUpdated].stock_quantity}];
-
-   //  console.table(update);
-
+    viewInventory();
 
   }); //closing connection.query
 
