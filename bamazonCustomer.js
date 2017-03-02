@@ -101,7 +101,27 @@ console.log("----------------------------");
 
           console.log("Your order has been placed!");
           console.log("Your total cost for your order of " + product + " is: $" + totalCost);
+          productArray = [];
+
+          connection.query("SELECT * FROM products3", function(err, results){
+                if (err) throw err;
+                console.log("Bamazon Top Items:");
+
+                for(var i = 0; i < results.length; i++){
+                  productArray.push({
+                     ID: results[i].id,
+                     Product: results[i].product_name,
+                     Department:results[i].department_name,
+                     Price:results[i].price,
+                     Stock:results[i].stock_quantity
+                    });
+                } //closing for loop
+
+              console.table(productArray);
+              console.log("----------------------------");
           makeAnotherPurchase();
+
+             }); //closing connection.query
 
         }); //closing update to table
 
